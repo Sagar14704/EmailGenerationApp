@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package javaapplication2;
+
 
 /**
  *
@@ -47,15 +47,22 @@ class EmailGenerator {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int PASSWORD_LENGTH = 8;
 
-    public static String generateEmail(String name) {
+    public static String generateEmail(String name, List<String> existingEmails) {
         String[] nameParts = name.split(" ");
         if (nameParts.length < 2) {
             throw new IllegalArgumentException("Please enter both first and last names.");
         }
 
-        StringBuilder emailBuilder = new StringBuilder();
-        emailBuilder.append(nameParts[0].charAt(0)).append(nameParts[1]).append(DOMAIN);
-        return emailBuilder.toString().toLowerCase();
+        String baseEmail = nameParts[0].charAt(0) + nameParts[1];
+        String email = baseEmail.toLowerCase() + DOMAIN;
+        
+        int count = 1;
+        while (existingEmails.contains(email)) {
+            email = baseEmail.toLowerCase() + count + DOMAIN;
+            count++;
+        }
+        
+        return email;
     }
 
     public static String generatePassword() {
@@ -70,13 +77,11 @@ class EmailGenerator {
         return passwordBuilder.toString();
     }
 
-    // Simplified password strength checker method
     public static String checkPasswordStrength(String password) {
         boolean hasUpperCase = false;
         boolean hasLowerCase = false;
         boolean hasDigit = false;
 
-        // Check for criteria
         if (password.length() >= 8) {
             for (char ch : password.toCharArray()) {
                 if (Character.isUpperCase(ch)) hasUpperCase = true;
@@ -104,7 +109,12 @@ public class EmailGenerationApp {
 
     public void addEmployee(String name) {
         try {
-            String email = EmailGenerator.generateEmail(name);
+            List<String> existingEmails = new ArrayList<>();
+            for (Employee emp : employees) {
+                existingEmails.add(emp.getEmailId());
+            }
+
+            String email = EmailGenerator.generateEmail(name, existingEmails);
             System.out.println("Generated Email ID: " + email);
             String randomPassword = EmailGenerator.generatePassword();
             System.out.println("Generated Random Password: " + randomPassword);
